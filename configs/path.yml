@@ -1,0 +1,9 @@
+data:
+  path: ./Images/B/
+
+results:
+  path: ./Results/
+
+dumps:
+  weights: ./trained-models/
+  logs: ./logs
