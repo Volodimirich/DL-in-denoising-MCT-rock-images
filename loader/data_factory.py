@@ -1,12 +1,12 @@
 import numpy as np
 from glob import glob
 import os
-from loader.dataset import Dataset, BSD
+from loader.dataset import Dataset
 from torch.utils.data import DataLoader
 from torchvision.transforms import Compose
 from loader.transforms import RandomCrop, ToFloat, ToTensor
 
-def make_ct_datasets(configs, paths):
+def make_ct_datasets(configs, paths, crop_size = None):
     TRAIN_SIZE = 0.9
     o_img_paths = np.array(sorted(glob(os.path.join(paths['data']['path'], 'Original/*'))))
     f_img_paths = np.array(sorted(glob(os.path.join(paths['data']['path'], 'Filtered/*'))))
@@ -17,7 +17,8 @@ def make_ct_datasets(configs, paths):
                      'filtered': f_img_paths[int(TRAIN_SIZE * len(f_img_paths)):]
                     }
 
-    crop_size = configs['data_params']['augmentation_params']['crop_size']
+    if not crop_size:
+        crop_size = configs['data_params']['augmentation_params']['crop_size']
     transforms_train = Compose([
                                 RandomCrop(crop_size),
                                 ToFloat(),

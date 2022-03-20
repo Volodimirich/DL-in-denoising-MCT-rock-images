@@ -27,9 +27,10 @@ class Dataset:
         f_img = cv2.imread(f_img_path, 0)
         
         #### FIX
-        dim = (400, 400)
+        dim = (402, 402)
 
-        ### resize image
+        #
+        ## resize image
         o_img = cv2.resize(o_img, dim, interpolation=cv2.INTER_AREA)
         f_img = cv2.resize(f_img, dim, interpolation=cv2.INTER_AREA)
 

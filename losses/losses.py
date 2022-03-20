@@ -172,25 +172,3 @@ class PerceptualLoss34(nn.Module):
 
 
 
-###### TO BE REMOVED ######
-def ssim_2(pred_img, ref_img, sigma=1.5):
-
-    k1 = 0.01 ** 2
-    k2 = 0.03 ** 2
-    num_ch = ref_img.shape[1]
-
-    kernel = gaussian_kernel(ref_img.shape[2], sigma)
-    kernel = kernel.repeat(1, num_ch, 1, 1)
-    kernel = kernel.to("cuda")
-
-    mu_x = torch.mean(pred_img * kernel, dim=(1, 2, 3))
-    mu_y = torch.mean(ref_img * kernel, dim=(1, 2, 3))
-
-    var_x = torch.mean((pred_img * kernel)**2, dim=(1, 2, 3)) - mu_x**2
-    var_y = torch.mean((ref_img * kernel)**2, dim=(1, 2, 3)) - mu_y**2
-    var_xy = torch.mean(pred_img * ref_img * kernel**2, dim=(1, 2, 3)) - mu_x * mu_y
-
-    sim_score = torch.mean((2*mu_x*mu_y + k1) * (2*var_xy + k2) / ((mu_x**2 + mu_y**2 + k1) * (var_x + var_y + k2)))
-
-    return sim_score
-
