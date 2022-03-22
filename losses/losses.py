@@ -65,31 +65,6 @@ def ssim(pred_img, ref_img, sigma=1.5, kernel_size=None, return_cs=False, averag
         return sim_score
 
 
-def ms_ssim_l1(pred_img, ref_img, sigma=1.5, alpha=1.0):
-
-    weights = [0.0448, 0.2856, 0.3001, 0.2363, 0.1333]
-    ms_ssim_score = 1.0
-
-    if alpha != 1:
-        l1_loss = nn.L1Loss()(pred_img, ref_img)
-    else:
-        l1_loss = 0
-
-    for i in range(len(weights)-1):
-        # cs is a tensor of shape (batch_size,)
-        _, cs = ssim(pred_img, ref_img, sigma=sigma, return_cs=True, average=False)
-        ms_ssim_score *= torch.abs(cs) ** weights[i]
-
-        padding = (pred_img.shape[2] % 2, pred_img.shape[3] % 2)
-        pred_img = F.avg_pool2d(pred_img, kernel_size=2, padding=padding)
-        ref_img = F.avg_pool2d(ref_img, kernel_size=2, padding=padding)
-
-    ms_ssim_score *= ssim(pred_img, ref_img, sigma=sigma, return_cs=False, average=False) ** weights[-1]
-    ms_ssim_score = ms_ssim_score.mean()
-
-    return alpha * (1 - ms_ssim_score) + (1 - alpha) * l1_loss
-
-
 class SSIMLoss(nn.Module):
 
     def __init__(self, sigma=1.5):
@@ -98,26 +73,6 @@ class SSIMLoss(nn.Module):
 
     def forward(self, pred_img, ref_img):
         return 1.0 - ssim(pred_img, ref_img, self.sigma)
-
-class MSSSIMLoss(nn.Module):
-
-    def __init__(self, alpha=1.0):
-        super().__init__()
-        self.alpha = alpha
-
-    def forward(self, pred_img, ref_img):
-        return ms_ssim_l1(pred_img, ref_img, self.alpha)
-
-
-class MixLoss(nn.Module):
-
-    def __init__(self, alpha=0.84):
-        super().__init__()
-        self.alpha = alpha
-
-    def forward(self, pred_img, ref_img):
-        return ms_ssim_l1(pred_img, ref_img, self.alpha)
-
 
 class PerceptualLoss(nn.Module):
 
@@ -168,7 +123,4 @@ class PerceptualLoss34(nn.Module):
         ref_img = self.loss_calculator(ref_img.repeat(1, 3, 1, 1))
 
         return torch.mean((pred_img - ref_img) ** 2)
-
-
-
 

@@ -1,7 +1,6 @@
 import torch
 import numpy as np
 from torch import nn
-import pydoc
 from glob import glob
 import os
 from torch.utils.data import DataLoader
@@ -10,15 +9,19 @@ import cv2
 import time
 
 import warnings
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+from models.denoising.DnCNN import DnCNN
+from models.denoising.rednet import RED_Net_20
+
 warnings.filterwarnings('ignore')
 
 from src.utils import get_config, parse_args
 from loader.dataset import Dataset
 from loader.transforms import ToTensor, ToFloat, RandomCrop
-from unused.metrics import PSNR
+from losses.metrics import PSNR
 
 def main():
-
     args = parse_args()
     config = get_config(args.config)
 
@@ -34,10 +37,12 @@ def main():
         device = 'cpu'
     print(f'Current device is {device}')
 
-    model = pydoc.locate(config['inference_params']['model'])().to(device)
+    # model = RED_Net_20()
+    model = DnCNN(channels=1)
     model = nn.DataParallel(model)
     model_dumps = torch.load(config['paths']['weights'], map_location=device)
     model.load_state_dict(model_dumps['model_state_dict'])
+    model = model.to(device)
     crop_size = config['inference_params']['crop_size']
 
 
@@ -92,6 +97,8 @@ def main():
         f.write(f'PSNR (mean ± std) of refs and noisy images: {np.mean(psnr_scores_ref)} ± {np.std(psnr_scores_ref)}\n')
         f.write(f'Elapsed time: {toc - tic}, s\n')
         f.write('='*50 + '\n'*2)
+        print(f'PSNR (mean ± std) of refs and predicted images: {np.mean(psnr_scores_model)} ± {np.std(psnr_scores_model)}\n')
+        print(f'PSNR (mean ± std) of refs and noisy images: {np.mean(psnr_scores_ref)} ± {np.std(psnr_scores_ref)}\n')
 
 if __name__ == '__main__':
     main()

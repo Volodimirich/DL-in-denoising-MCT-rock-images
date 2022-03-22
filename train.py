@@ -1,16 +1,16 @@
 import os
-import pydoc
 
 import piq
 from matplotlib import pyplot as plt
-from torch import nn
 
 from losses.losses import *
 from src.utils import get_config, parse_args, Logger, save_model
 from loader.data_factory import make_ct_datasets
+from models.denoising.DnCNN import DnCNN
 from models.denoising.rednet import RED_Net_20
 import torch
 import pickle
+
 import ssl
 
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -53,8 +53,11 @@ def train(model, optimizer, criterion, train_loader, num_epoch, device, val_load
 
             # forward propagate
             Y_pred = model(X)
+
             Y_pred = torch.nan_to_num(Y_pred)
+
             loss = criterion(Y_pred, Y_true)
+
             loss_logger.update(loss.item())
 
             # backprop and update the params
@@ -74,6 +77,7 @@ def train(model, optimizer, criterion, train_loader, num_epoch, device, val_load
 
             with torch.no_grad():
                 Y_pred = model(X)
+                Y_pred = torch.nan_to_num(Y_pred)
                 val_loss = criterion(Y_pred, Y_true)
             loss_logger.update(val_loss.item())
 
@@ -93,25 +97,38 @@ def train(model, optimizer, criterion, train_loader, num_epoch, device, val_load
 
     return train_loss_list, val_loss_list
 
-if __name__ == '__main__':
+def loss_test():
     args = parse_args()
     print('args', args)
-    paths, configs = get_config(args.paths),  get_config(args.config)
+    paths, configs = get_config(args.paths), get_config(args.config)
 
     # model = RED_Net_20(inp=1, out=64,kernel=3,st=1,pad=1).to(device)
     print(f'Current device: {device}')
-    sr_sim =  piq.SRSIMLoss(data_range=1.)
+    sr_sim = piq.SRSIMLoss(data_range=1.)
 
-    loss_list = [nn.L1Loss(), nn.MSELoss(), SSIMLoss(), PerceptualLoss(), PerceptualLoss31(), PerceptualLoss34(),
-                 sr_sim]
-    colors = ['r', 'g', 'b','orange', 'cyan', 'pink', 'silver']
-    names = ['L1_loss', 'L2_loss', 'SSIM_loss', 'VGG11_loss', 'VGG31_loss', 'VGG34_loss', 'SRSIM_loss']
+    # Losses which we try to use in this task
+    # f_sim = piq.FSIMLoss(data_range=1., reduction='none')
+    # gmsd_loss = piq.GMSDLoss(data_range=1., reduction='none')
+    # haarpsi_index = piq.HaarPSILoss(data_range=1., reduction='none')
+    # lpips_loss = piq.LPIPS(reduction='none')
+    # mdsi_loss = piq.MDSILoss(data_range=1., reduction='none')
+    # ms_ssim_loss = piq.MultiScaleSSIMLoss(data_range=1., reduction='none')
+    # ms_gmsd_loss = piq.MultiScaleGMSDLoss(chromatic=False, data_range=1., reduction='none')
+    # pieapp_loss = piq.PieAPP(reduction='none', stride=32)
+    # tv_loss = piq.TVLoss(reduction='none')
+    # vsi_loss = piq.VSILoss(data_range=1.)
+
+    loss_list = [sr_sim, nn.L1Loss(), nn.MSELoss(), SSIMLoss(), PerceptualLoss(), PerceptualLoss31(), PerceptualLoss34()
+                 ]
+    names = ['SR_Sim', 'L1Loss', 'MSELoss','SSIM', 'VGG11', 'VGG31', 'VGG34']
+
     ####### TRAINING ######
     max_epoch = int(configs['train_params']['max_epoch'])
-    x = [i for i in range(1, 51)]
-    for col, loss, name in zip(colors, loss_list, names):
+    x = [i for i in range(1, 151)]
+    for loss, name in zip(loss_list, names):
         model = RED_Net_20()
-        model = nn.DataParallel(model, device_ids=[0,1])
+        # model = DnCNN(channels=1)
+        model = nn.DataParallel(model, device_ids=[0, 1, 2, 3])
         model.to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', factor=0.1, patience=5, verbose=True,
@@ -119,10 +136,9 @@ if __name__ == '__main__':
 
         train_loader, val_loader = make_ct_datasets(configs, paths, crop_size=128)
         loss_list, val_list = train(model, optimizer, loss, train_loader, max_epoch, device, val_loader,
-              scheduler=scheduler, weights_path=paths['dumps']['weights'], model_name=f'{name}.pt')
+                                    scheduler=scheduler, weights_path=paths['dumps']['weights'],
+                                    model_name=f'{name}_RedNet.pt')
 
-        plt.plot(x, loss_list, label=f'{name}_train', color=col, linestyle='-')
-        plt.plot(x, val_list, label=f'{name}_val', color=col, linestyle='--')
         del model
         optimizer.zero_grad()
         torch.cuda.empty_cache()
@@ -136,3 +152,32 @@ if __name__ == '__main__':
     plt.xlabel('Epochs')
     plt.ylabel('Loss function')
     plt.savefig('crop_plot_c.png')
+
+def solo_learn():
+    args = parse_args()
+    print('args', args)
+    paths, configs = get_config(args.paths), get_config(args.config)
+
+    # model = RED_Net_20(inp=1, out=64,kernel=3,st=1,pad=1).to(device)
+    print(f'Current device: {device}')
+
+    loss = torch.nn.MSELoss()
+
+    ####### TRAINING ######
+    name = 'Linear_long'
+    max_epoch = int(configs['train_params']['max_epoch'])
+    x = [i for i in range(1, 51)]
+    # model = RED_Net_20()
+    model = DnCNN(channels=1)
+    model = nn.DataParallel(model, device_ids=[0, 1])
+    model.to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'max', factor=0.1, patience=5, verbose=True,
+                                                           min_lr=0.0000001)
+
+    train_loader, val_loader = make_ct_datasets(configs, paths, crop_size=128)
+    train(model, optimizer, loss, train_loader, max_epoch, device, val_loader,
+                                scheduler=scheduler, weights_path=paths['dumps']['weights'], model_name=f'{name}.pt')
+
+if __name__ == '__main__':
+    loss_test()

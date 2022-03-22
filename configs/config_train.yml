@@ -3,7 +3,6 @@ data_params:
   num_workers: 1 
   augmentation_params:
     crop_size: 128
-  #sigma: 10
 
 train_params:
   model_name: REDNet
@@ -18,6 +17,6 @@ train_params:
     patience: 5
     verbose: True
     min_lr: 0.0000001
-  max_epoch: 50
+  max_epoch: 10
   loss: torch.nn.MSELoss
   metrics: [PSNR, MSE, SSIM]

@@ -6,3 +6,10 @@ inference_params:
   model_name: REDNet20
   model: models.denoising.rednet.RED_Net_20
   device: cuda
+  crop_size: 128
+
+paths:
+  data: ./Images/B/
+  weights: ./trained-models/Linear_long.pt
+  results: ./results/
+  log: ./logs/inf.txt

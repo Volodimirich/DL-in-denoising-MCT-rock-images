@@ -2,8 +2,6 @@ from argparse import ArgumentParser
 
 import torch
 import yaml
-from matplotlib import pyplot as plt
-
 
 def save_model(model, path, history=None):
     """
@@ -27,19 +25,6 @@ def load_model(model, path, device):
 
     return history
 
-
-def plot_learning_history(history, title=''):
-    learning_curve, acc_train_curve, acc_val_curve = history
-    fig, axes = plt.subplots(1, 2, figsize=(15, 3))
-    fig.suptitle(title)
-
-    axes[0].plot(learning_curve)
-    axes[0].set_title('Learning Curve')
-
-    axes[1].plot(acc_train_curve, label='Train')
-    axes[1].plot(acc_val_curve, label='Val')
-    axes[1].legend()
-    axes[1].set_title('Max accuracy on val set: {:.4f}'.format(max(acc_val_curve)))
 
 def get_config(path):
 

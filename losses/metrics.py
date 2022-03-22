@@ -95,7 +95,6 @@ def PSNR(ref_img, pred_img):
     """
 
     _assert_compatible(ref_img, pred_img)
-
     dmin, dmax = dtype_range[ref_img.dtype.type]
     true_min, true_max = np.min(ref_img), np.max(ref_img)
     if true_max > dmax or true_min < dmin:

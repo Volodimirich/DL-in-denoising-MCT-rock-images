@@ -1,8 +1,3 @@
-#from skimage import color
-#from skimage.util import random_noise
-import pandas as pd
-import torch.utils.data
-from PIL import Image
 import cv2
 class Dataset:
     '''Noisy/filtered CT images dataset'''
@@ -25,9 +20,8 @@ class Dataset:
 
         o_img = cv2.imread(o_img_path, 0)
         f_img = cv2.imread(f_img_path, 0)
-        
         #### FIX
-        dim = (402, 402)
+        dim = (402, 400)
 
         #
         ## resize image
@@ -42,31 +36,3 @@ class Dataset:
         sample['name'] = f_img_path.split('/')[-1]
 
         return sample
-
-
-# class BSD:
-
-    # def __init__(self, paths, sigma, transform=None):
-    #
-    #     self.paths = paths
-    #     self.transform = transform
-    #     self.sigma = sigma
-    #
-    # def __len__(self):
-    #     return len(self.paths)
-    #
-    # def __getitem__(self, idx):
-    #     pass
-        #target_img = cv2.imread(self.paths[idx])
-        #target_img = color.rgb2gray(target_img)
-        #noisy_img = random_noise(target_img, mode='gaussian', var=self.sigma**2)
-
-
-        #sample = {"X" : noisy_img,
-                  #"Y" : target_img
-                  #}
-
-        #if self.transform:
-            #sample = self.transform(sample)
-
-        #return sample

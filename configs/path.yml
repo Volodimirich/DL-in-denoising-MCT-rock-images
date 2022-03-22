@@ -2,7 +2,7 @@ data:
   path: ./Images/B/
 
 results:
-  path: ./Results/
+  path: ./results/
 
 dumps:
   weights: ./trained-models/
