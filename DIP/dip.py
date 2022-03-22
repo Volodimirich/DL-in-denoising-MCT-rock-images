@@ -6,12 +6,12 @@ from PIL import Image
 import torch
 import torch.optim
 from skimage.metrics import peak_signal_noise_ratio as compare_psnr
+from models import skip
 
 torch.backends.cudnn.enabled = True
 torch.backends.cudnn.benchmark = True
 dtype = torch.cuda.FloatTensor
 
-from models import skip
 
 def dir_path(string):
     if os.path.isdir(string):
@@ -36,7 +36,6 @@ def create_denoised_dir(path_noised):
 
 
 def crop_image(img, size):
-    '''Crop PIL image'''
     if size > img.size[0]:
         new_size = img.size
     else:
@@ -51,18 +50,9 @@ def crop_image(img, size):
 
 
 def get_noise(input_depth, spatial_size, var=1./10):
-    """Returns a pytorch.Tensor of size (1 x `input_depth` x `spatial_size[0]` x `spatial_size[1]`)
-    initialized in a specific way.
-    Args:
-        input_depth: number of channels in the tensor
-        method: `noise` for fillting tensor with noise; `meshgrid` for np.meshgrid
-        spatial_size: spatial size of the tensor to initialize
-        noise_type: 'u' for uniform; 'n' for normal
-        var: a factor, a noise will be multiplicated by. Basically it is standard deviation scaler.
-    """
     shape = [1, input_depth, spatial_size[0], spatial_size[1]]
     net_input = torch.zeros(shape)
-    net_input.normal_()  # fill moise
+    net_input.normal_()  # fill noise
     net_input *= var
     return net_input
 
@@ -83,12 +73,6 @@ def load_cropped_image(file_name, size):
 
 
 def get_param(net):
-    '''Returns parameters that we want to optimize over.
-    Args:
-        opt_over: comma separated list, e.g. "net,input" or "net"
-        net: network
-        net_input: torch.Tensor that stores input `z`
-    '''
     params = []
     params += [x for x in net.parameters()]
     return params
@@ -97,7 +81,6 @@ def get_param(net):
 def process_dip(img_noisy_pil, img_noisy_np, path_denoised_for_saving_metrics=None):
     # SETUP
     reg_noise_std = 1. / 30.  # set to 1./20. for sigma=50
-    exp_weight = 0.02
     pad = 'reflection'
     input_depth = 32
     skip_n33d = 128
@@ -117,7 +100,7 @@ def process_dip(img_noisy_pil, img_noisy_np, path_denoised_for_saving_metrics=No
                pad=pad,
                act_fun='LeakyReLU').type(dtype)
 
-    net_input = get_noise(32, (img_noisy_pil.size[1], img_noisy_pil.size[0])).type(dtype).detach()  # ok
+    net_input = get_noise(input_depth, (img_noisy_pil.size[1], img_noisy_pil.size[0])).type(dtype).detach()  # ok
     # Compute number of parameters
     s = sum([np.prod(list(p.size())) for p in net.parameters()]);  # ok
     print('Number of params: %d' % s)  # ok
@@ -131,7 +114,7 @@ def process_dip(img_noisy_pil, img_noisy_np, path_denoised_for_saving_metrics=No
 
     # OPTIMIZE
     num_iter = 700
-    lr = 0.00002
+    lr = 0.000015
     net_input_saved = net_input.detach().clone()
     noise = net_input.detach().clone()
     p = get_param(net)
@@ -158,7 +141,7 @@ def process_dip(img_noisy_pil, img_noisy_np, path_denoised_for_saving_metrics=No
 
     if path_denoised_for_saving_metrics is not None:
         # save metrics
-        pth = path_denoised_for_saving_metrics[:-3]
+        pth = path_denoised_for_saving_metrics[:-4]
         pth_psnr = pth + "_psnr.txt"
         pth_loss = pth + "_loss.txt"
         with open(pth_psnr, 'w') as f:
