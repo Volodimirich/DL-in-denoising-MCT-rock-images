@@ -167,7 +167,7 @@ def denoise(path_orig, path_denoised, crop_size):
             file_path_orig = path_orig + "/" + file
             file_path_den = path_denoised + "/" + file
             img_noisy_pil, img_noisy_np = load_cropped_image(file_path_orig, size=crop_size)
-            denoised_img = process_dip(img_noisy_pil, img_noisy_np, file_path_den)
+            denoised_img = process_dip(img_noisy_pil, img_noisy_np)
             save_img(file_path_den, denoised_img[0])
 
 
