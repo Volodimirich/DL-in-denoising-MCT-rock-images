@@ -4,10 +4,6 @@ In this project results of the article [“Deep learning in denoising of micro-c
 
 ## Requirements
 
-The repository is built on top of PyTorch `1.2.0`. 
-The structure of the project is inspired by [open-mmlab/mmsr](https://github.com/open-mmlab/mmsr).
-To install all required packages, run the following command:
-
 ```bash
 pip install -r requirements.txt
 ```
@@ -15,7 +11,8 @@ pip install -r requirements.txt
 
 RedNET model need to be configured with YAML files, that are located in the [configs folder](https://github.com/Volodimirich/DL-in-denoising-MCT-rock-images/tree/main/configs).
 
-After applying configuration, `train.py` file needs to be executed.
+After applying configuration, `train.sh` file needs to be executed.
+If you want check quality of your results you can use `inference.sh` with the specified path to the model weights. Also you should change model type in the `inference.py` file, because the `.py` file DnCNN is set as a basic model.
 
 DIP model and following instructions are located in [this folder](https://github.com/Volodimirich/DL-in-denoising-MCT-rock-images/tree/main/DIP).
 
