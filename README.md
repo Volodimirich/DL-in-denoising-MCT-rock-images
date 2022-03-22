@@ -10,6 +10,13 @@ As improvements to the original article, new spectral residual-based loss SR-SIM
 
 YAML configuration files are located in the [configs folder](https://github.com/Volodimirich/DL-in-denoising-MCT-rock-images/tree/main/configs)
 
+## Sources
+https://github.com/smikhai1/deep-image-denoising
+
+https://github.com/DmitryUlyanov/deep-image-prior
+
+https://github.com/SaoYan/DnCNN-PyTorch
+
 ## License
 MIT
 
