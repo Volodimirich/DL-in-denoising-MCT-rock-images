@@ -3,7 +3,9 @@ The following script file could be used to receive a denoised image with needed 
 
 ## Pipeline
 Run following command in terminal:
-```console python dip.py [P] [C]```
+
+```python dip.py [P] [C]```
+
 where: P - path to folder with noised images, C - crop size (int).
 The denoised images will appear in the new folder next to the original folder wih noised data.
 
