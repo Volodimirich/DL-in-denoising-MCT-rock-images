@@ -23,6 +23,8 @@ MIT
 ## Contact
 Vladimir.Shaposhnikov@skoltech.ru
 
-dmitry.artemasov@skoltech.ru
+Dmitry.Artemasov@skoltech.ru
 
+Sergey.Kupriyanov@skoltech.ru
 
+Dmitrii.Masnyi@skoltech.ru

@@ -1,12 +1,14 @@
-It is a copy of DeepDigitalRock with code refactoring for project work
+## Deep Image Prior (DIP)
+The following script file could be used to receive a denoised image with needed crop size via terminal.
 
-# DeepDigitalRock
-This is the companion code of the paper by Sidorenko et al. The code contains the implementations of
-RED-Net 20 and RED-Net 30, training pipeline and inference pipeline. To configure training/inference 
-config files in YAML format are used.
+## Pipeline
+Run following command in terminal:
+```console python dip.py [P] [C]```
+where: P - path to folder with noised images, C - crop size (int).
+The denoised images will appear in the new folder next to the original folder wih noised data.
 
-## License
-MIT
+## Sources
+https://github.com/DmitryUlyanov/deep-image-prior
 
-## Contact
-Mikhail Sidorenko (mikhail.sidorenko@skoltech.ru)
+
+
