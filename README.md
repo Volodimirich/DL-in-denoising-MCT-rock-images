@@ -18,7 +18,17 @@ DIP model and following instructions are located in [this folder](https://github
 
 Images denoised with DIP were used to train RedNET as the target. Different loss functions were used to evaluate the supervised model and obtain best denoising performance.
 
+`Deep Image Prior Model`
+![Deep Image Prior](./pics/DIP.png)
+
+`RedNET Model`
+![RedNET](./pics/RedNET.png)
+
 As improvements to the original article, new spectral residual-based loss SR-SIM and DnCNN achitecture are proposed. 
+
+`DnCNN Model`
+![DnCNN](./pics/DnCNN.png)
+
 
 
 ## Sources
